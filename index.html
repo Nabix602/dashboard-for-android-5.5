@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Dashboard Esteban</title>
+<link rel="stylesheet" href="style.css?v=20">
+</head>
+<body>
+<div id="splash"><p>dashboard-for-android-5</p><span class="splash-credit">Made by Esteban W</span></div>
+
+<div id="ambient-tint"></div>
+<div id="ambient-glow"></div>
+
+<div id="app">
+  <div id="safe"></div>
+
+  <div id="stage">
+    <div id="clock">--:--</div>
+    <div id="date"></div>
+  </div>
+
+  <div id="bottom">
+    <div id="side">
+      <div id="weather" class="card secondary" style="display:none">
+        <div id="weather-icon" class="w-icon"></div>
+        <div id="weather-temp" class="w-temp"></div>
+        <div id="weather-cond" class="w-cond"></div>
+        <div id="sun" class="w-cond"></div>
+      </div>
+
+      <div id="news" class="card secondary optional saver-hide" style="display:none">
+        <p id="news-source" class="news-source fx"></p>
+        <p id="news-title" class="news-title fx"></p>
+      </div>
+    </div>
+
+    <div id="middle">
+      <div id="spotify" class="card optional saver-hide" style="display:none">
+        <div id="sp-art"><div id="sp-a" class="sp-layer"></div><div id="sp-b" class="sp-layer"></div></div>
+        <p id="sp-title" class="sp-title fx"></p>
+        <p id="sp-artist" class="sp-artist fx"></p>
+        <div id="sp-track"><div id="sp-bar"></div></div>
+        <p id="sp-time" class="sp-time"></p>
+      </div>
+
+      <div id="quote" class="card optional">
+        <p id="quote-badge" class="badge" style="display:none">✨ Citation du jour</p>
+        <p id="quote-text" class="quote-text fx"></p>
+        <p id="quote-meta" class="quote-meta fx"></p>
+        <p id="quote-song" class="quote-song fx" style="display:none"></p>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="net" style="display:none"></div>
+
+  <button id="fs" type="button" aria-label="Plein écran" style="display:none">⛶</button>
+  <button id="cfg" type="button" aria-label="Réglages" style="display:none">⚙</button>
+
+  <div id="panel">
+    <div class="panel-row">
+      <span>Luminosité</span>
+      <span class="panel-ctl"><button id="dim-down" type="button">−</button><span id="dim-val">100 %</span><button id="dim-up" type="button">+</button></span>
+    </div>
+    <div class="panel-row">
+      <span>Mode nuit auto (21 h 30 – 7 h)</span>
+      <span class="panel-ctl"><button id="v-toggle" type="button">Désactivé</button></span>
+    </div>
+    <div class="panel-row">
+      <span>Citations</span>
+      <span class="panel-ctl"><button id="q-toggle" type="button">Affichées</button></span>
+    </div>
+    <button id="panel-close" type="button">Fermer</button>
+  </div>
+</div>
+
+<script src="quotes.js?v=14"></script>
+<script src="weather.js?v=3"></script>
+<script src="news.js?v=3"></script>
+<script src="script.js?v=20"></script>
+</body>
+</html>

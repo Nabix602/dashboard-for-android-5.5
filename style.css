@@ -1,0 +1,823 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+body {
+  color: #f2f2f7;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/* Startup splash: "Dashboard Esteban", fades in then out. CSS only. */
+#splash {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: #0a0a0c;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-animation: splashIn 1s ease 0s both, splashOut 1.1s ease 2.7s both;
+  animation: splashIn 1s ease 0s both, splashOut 1.1s ease 2.7s both;
+}
+
+#splash p {
+  margin: 0;
+  font-size: 4.2vh;
+  font-weight: 200;
+  letter-spacing: 0.2em;
+  color: #f2f2f7;
+}
+
+@-webkit-keyframes splashIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes splashIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@-webkit-keyframes splashOut {
+  from { opacity: 1; visibility: visible; }
+  to { opacity: 0; visibility: hidden; }
+}
+
+@keyframes splashOut {
+  from { opacity: 1; visibility: visible; }
+  to { opacity: 0; visibility: hidden; }
+}
+
+/* Ambient layers: weather tint and a static glow shown only while music plays.
+   Both sit behind the content and never capture input. */
+#ambient-tint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: transparent;
+  -webkit-transition: background-color 4s ease;
+  transition: background-color 4s ease;
+}
+
+#ambient-tint[data-wx="clear"] { background-color: rgba(255, 185, 100, 0.025); }
+#ambient-tint[data-wx="cloud"] { background-color: rgba(120, 150, 190, 0.02); }
+#ambient-tint[data-wx="rain"]  { background-color: rgba(60, 115, 200, 0.03); }
+#ambient-tint[data-wx="snow"]  { background-color: rgba(200, 220, 245, 0.02); }
+#ambient-tint[data-wx="storm"] { background-color: rgba(95, 70, 150, 0.03); }
+#ambient-tint[data-wx="fog"]   { background-color: rgba(175, 175, 180, 0.015); }
+
+#ambient-glow {
+  position: absolute;
+  left: -20%;
+  top: -20%;
+  width: 140%;
+  height: 140%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: -webkit-radial-gradient(35% 70%, circle, rgba(170, 195, 240, 0.08) 0%, rgba(170, 195, 240, 0) 55%);
+  background: radial-gradient(circle at 35% 70%, rgba(170, 195, 240, 0.08) 0%, rgba(170, 195, 240, 0) 55%);
+  -webkit-transition: opacity 2.5s ease;
+  transition: opacity 2.5s ease;
+}
+
+body.playing #ambient-glow {
+  opacity: 1;
+}
+
+#app {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+/* Damaged top area: kept empty */
+#safe {
+  -webkit-flex: 0 0 15%;
+  flex: 0 0 15%;
+  height: 15%;
+}
+
+#stage {
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+
+#clock {
+  font-size: 30vh;
+  line-height: 1;
+  font-weight: 200;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+  color: #f5f5f7;
+}
+
+#date {
+  font-size: 3.2vh;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: #8e8e93;
+  margin-top: 2.2vh;
+  white-space: nowrap;
+}
+
+#bottom {
+  position: relative;
+  -webkit-flex: 0 0 40%;
+  flex: 0 0 40%;
+  height: 40%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+  padding: 0 4vw 5vh 4vw;
+  box-sizing: border-box;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 40px;
+  box-sizing: border-box;
+  overflow: hidden;
+  -webkit-transition: opacity 0.8s ease;
+  transition: opacity 0.8s ease;
+}
+
+/* Secondary information: quieter surfaces and softer text */
+.secondary {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.fx {
+  -webkit-transition: opacity 0.4s ease;
+  transition: opacity 0.4s ease;
+}
+
+/* Left column: weather above news */
+#side {
+  -webkit-flex: 0 0 20%;
+  flex: 0 0 20%;
+  width: 20%;
+  min-width: 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  margin-right: 2vw;
+}
+
+/* Weather */
+#weather {
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  width: 100%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-justify-content: center;
+  justify-content: center;
+  padding: 2.2vh 2vw;
+}
+
+.w-icon {
+  font-size: 4.2vh;
+  line-height: 1;
+  color: #aeaeb2;
+}
+
+.w-temp {
+  font-size: 4.2vh;
+  font-weight: 300;
+  color: #c7c7cc;
+  margin-top: 1vh;
+}
+
+.w-cond {
+  font-size: 1.9vh;
+  color: #636366;
+  margin-top: 0.6vh;
+}
+
+/* News */
+#news {
+  opacity: 0.8;
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  margin-top: 2vh;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  padding: 2.2vh 1.6vw;
+}
+
+.news-source {
+  font-size: 1.6vh;
+  color: #58585c;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 1vh 0;
+}
+
+.news-title {
+  font-size: 1.9vh;
+  line-height: 1.4;
+  font-weight: 400;
+  color: #aeaeb2;
+  margin: 0;
+}
+
+/* Middle: quote and Spotify share the same space and cross-fade */
+#middle {
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  margin-right: 2vw;
+}
+
+#quote {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-justify-content: center;
+  justify-content: center;
+  padding: 6vh 6vw;
+  background: transparent;
+}
+
+.badge {
+  display: inline-block;
+  -webkit-align-self: flex-start;
+  align-self: flex-start;
+  font-size: 1.8vh;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: #e8c77a;
+  background: rgba(232, 199, 122, 0.10);
+  border-radius: 999px;
+  padding: 0.7vh 1.8vw;
+  margin: 0 0 4vh 0;
+}
+
+.quote-text {
+  font-family: Georgia, "Droid Serif", "Times New Roman", serif;
+  font-style: italic;
+  font-size: 4.4vh;
+  line-height: 1.5;
+  font-weight: 300;
+  letter-spacing: 0.005em;
+  color: #f2f2f7;
+  margin: 0 0 4vh 0;
+}
+
+.quote-meta {
+  font-size: 1.9vh;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8e8e93;
+  margin: 0;
+}
+
+.quote-meta::before {
+  content: "";
+  display: block;
+  width: 6vh;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.22);
+  margin: 0 0 2.4vh 0;
+}
+
+/* Artist quotes: sans-serif, blue music badge, song title underneath */
+#quote.artist .quote-text {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Roboto, Helvetica, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+#quote.artist .quote-meta {
+  display: inline-block;
+  -webkit-align-self: flex-start;
+  align-self: flex-start;
+  color: #7fb0f0;
+  background: rgba(74, 143, 231, 0.14);
+  border-radius: 999px;
+  padding: 0.6vh 1.6vw;
+  letter-spacing: 0.1em;
+}
+
+#quote.artist .quote-meta::before {
+  display: none;
+}
+
+.quote-song {
+  font-size: 2.4vh;
+  font-style: italic;
+  color: #aeaeb2;
+  margin: 1.2vh 0 0 0;
+}
+
+/* Artist order: badge, artist, song, then quote */
+#quote.artist .badge {
+  -webkit-order: -2;
+  order: -2;
+}
+
+#quote.artist .quote-meta {
+  margin: 0;
+  -webkit-order: -1;
+  order: -1;
+}
+
+#quote.artist .quote-song {
+  -webkit-order: 0;
+  order: 0;
+}
+
+#quote.artist .quote-text {
+  margin: 3vh 0 0 0;
+  -webkit-order: 1;
+  order: 1;
+}
+
+/* Spotify: now-playing view. Large cover; title and artist on their own lines, never overlapping */
+#spotify {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  padding: 2.5vh 2vw 0 2vw;
+  min-width: 0;
+  overflow: visible;
+  background: transparent;
+  text-align: center;
+}
+
+#sp-art {
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  position: relative;
+  width: 46vh;
+  height: 46vh;
+  border-radius: 26px;
+  overflow: hidden;
+  background-color: #1c1c1e;
+  box-shadow: 0 2vh 6vh rgba(0, 0, 0, 0.55), 0 0 9vh rgba(120, 160, 255, 0.22);
+}
+
+/* Two stacked layers: the new artwork fades in over the old one */
+.sp-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  -webkit-transition: opacity 0.9s ease;
+  transition: opacity 0.9s ease;
+}
+
+#sp-a {
+  opacity: 1;
+}
+
+#sp-b {
+  opacity: 0;
+}
+
+/* Elegant placeholder when there is no artwork or it fails to load */
+.sp-layer.empty {
+  background-image: -webkit-linear-gradient(135deg, #3a3a3f 0%, #1a1a1d 100%) !important;
+  background-image: linear-gradient(135deg, #3a3a3f 0%, #1a1a1d 100%) !important;
+}
+
+.sp-layer.empty::after {
+  content: "\266A";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  line-height: 46vh;
+  text-align: center;
+  font-size: 14vh;
+  color: rgba(255, 255, 255, 0.22);
+}
+
+
+.sp-title {
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  -webkit-align-self: stretch;
+  align-self: stretch;
+  margin: 2vh 0 0 0;
+  font-size: 3.4vh;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #f5f5f7;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.sp-artist {
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  -webkit-align-self: stretch;
+  align-self: stretch;
+  margin: 0.6vh 0 0 0;
+  font-size: 2.6vh;
+  line-height: 1.3;
+  color: #8e8e93;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#sp-track {
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  width: 46vh;
+  height: 0.4vh;
+  margin-top: 2vh;
+  border-radius: 1vh;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+  -webkit-transition: opacity 0.6s ease;
+  transition: opacity 0.6s ease;
+}
+
+#sp-bar {
+  height: 100%;
+  width: 0;
+  border-radius: 1vh;
+  background: #f2f2f7;
+  -webkit-transition: width 1s linear;
+  transition: width 1s linear;
+}
+
+.sp-time {
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  -webkit-align-self: stretch;
+  align-self: stretch;
+  margin: 0.6vh 0 0 0;
+  line-height: 1.3;
+  font-size: 1.9vh;
+  color: #8e8e93;
+}
+
+/* Music playing: the clock steps back and the now-playing view takes the space */
+#clock {
+  -webkit-transition: font-size 1.2s ease;
+  transition: font-size 1.2s ease;
+}
+
+#bottom {
+  -webkit-transition: height 1.2s ease, flex-basis 1.2s ease;
+  transition: height 1.2s ease, flex-basis 1.2s ease;
+}
+
+body.playing #clock {
+  font-size: 11vh;
+}
+
+body.playing #date {
+  font-size: 2.6vh;
+  margin-top: 1vh;
+}
+
+body.playing #bottom {
+  -webkit-flex: 0 0 70%;
+  flex: 0 0 70%;
+  height: 70%;
+  padding-bottom: 1vh;
+}
+
+
+/* Internet status: tiny and discreet */
+#net {
+  position: absolute;
+  left: 3vw;
+  bottom: 2vh;
+  z-index: 2;
+  font-size: 1.7vh;
+  color: #636366;
+  -webkit-transition: opacity 0.6s ease;
+  transition: opacity 0.6s ease;
+}
+
+/* Screen saver: keep clock, weather and one quote only */
+body.saver .saver-hide {
+  display: none !important;
+}
+
+/* Night mode */
+body.night {
+  background: #000;
+}
+
+body.night #clock,
+body.night #date {
+  color: #8e8e93;
+}
+
+body.night #ambient-tint,
+body.night #ambient-glow {
+  display: none;
+}
+
+/* Night: pure black behind everything */
+body.night,
+body.night #app {
+  background: #000;
+}
+
+/* Night: cards drop their grey panel so only the content shows on black */
+body.night .card {
+  background: transparent;
+}
+
+body.night .optional {
+  display: none !important;
+}
+
+body.night #middle {
+  display: none;
+}
+
+body.night #bottom {
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-align-items: center;
+  align-items: center;
+  padding-bottom: 6vh;
+}
+
+body.night #side {
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  width: auto;
+  margin-right: 0;
+}
+
+body.night #weather {
+  width: auto;
+  background: none;
+  -webkit-align-items: center;
+  align-items: center;
+  text-align: center;
+}
+
+body.night #net {
+  opacity: 0.15;
+}
+
+/* Layout centring: the Spotify / quote column is centred on the screen,
+   the weather and news column sits on the left, nothing on the right. */
+#side {
+  position: fixed;
+  left: 4vw;
+  top: 15vh;
+  bottom: 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-justify-content: center;
+  justify-content: center;
+  width: 18vw;
+  -webkit-flex: none;
+  flex: none;
+}
+
+#middle {
+  position: absolute;
+  left: 25%;
+  width: 50%;
+  top: 0;
+  bottom: 0;
+  margin: 0;
+  -webkit-flex: none;
+  flex: none;
+}
+
+/* Fullscreen button: appears on touch or mouse movement, then fades away */
+#fs {
+  position: fixed;
+  right: 2.5vw;
+  top: 2.5vh;
+  z-index: 5;
+  width: 5vh;
+  height: 5vh;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #c7c7cc;
+  font-size: 2.4vh;
+  line-height: 5vh;
+  text-align: center;
+  padding: 0;
+  opacity: 0;
+  -webkit-transition: opacity 0.6s ease;
+  transition: opacity 0.6s ease;
+}
+
+#fs.show {
+  opacity: 1;
+}
+
+/* Sunrise and sunset in the weather card, Apple Weather style */
+#sun {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-top: 1.4vh;
+  font-size: 1.8vh;
+  color: #8e8e93;
+  letter-spacing: 0.02em;
+}
+
+#sun .sun-item {
+  display: -webkit-inline-flex;
+  display: inline-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  margin-right: 2.2vw;
+}
+
+#sun svg {
+  width: 2.6vh;
+  height: 2.6vh;
+  margin-right: 0.6vw;
+  color: #aeaeb2;
+}
+
+/* Small credit at the bottom of the startup splash */
+.splash-credit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4vh;
+  text-align: center;
+  font-size: 1.4vh;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  color: #636366;
+}
+
+/* Settings button (same reveal rule as the fullscreen button) */
+#cfg {
+  position: fixed;
+  right: calc(2.5vw + 6.5vh);
+  top: 2.5vh;
+  z-index: 5;
+  width: 5vh;
+  height: 5vh;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #c7c7cc;
+  font-size: 2.4vh;
+  line-height: 5vh;
+  text-align: center;
+  padding: 0;
+  opacity: 0;
+  -webkit-transition: opacity 0.6s ease;
+  transition: opacity 0.6s ease;
+}
+
+#cfg.show {
+  opacity: 1;
+}
+
+/* Settings panel */
+#panel {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 10;
+  width: 40vw;
+  margin-left: -20vw;
+  margin-top: -14vh;
+  padding: 3.5vh 3vw;
+  box-sizing: border-box;
+  border-radius: 24px;
+  background: rgba(24, 24, 28, 0.96);
+  box-shadow: 0 2vh 6vh rgba(0, 0, 0, 0.6);
+  color: #f2f2f7;
+}
+
+#panel.open {
+  display: block;
+}
+
+.panel-row {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-align-items: center;
+  align-items: center;
+  padding: 1.6vh 0;
+  font-size: 2.4vh;
+}
+
+.panel-ctl button,
+#panel-close {
+  border: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f2f2f7;
+  font-size: 2.2vh;
+  padding: 1vh 1.6vw;
+}
+
+.panel-ctl button {
+  margin: 0 1vw;
+}
+
+#dim-val {
+  display: inline-block;
+  min-width: 7vw;
+  text-align: center;
+  color: #aeaeb2;
+}
+
+#panel-close {
+  display: block;
+  margin: 2.5vh auto 0 auto;
+}
+
+/* Now Playing floats on the background: no panel behind the cover */
+#spotify {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
