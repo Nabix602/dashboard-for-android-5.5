@@ -35,8 +35,8 @@ Horloge, date, météo, lever et coucher du soleil, citations, actualités, morc
 
 ```bash
 # 1. Télécharger le projet
-git clone https://github.com/<votre-pseudo>/dashboard-for-android-public.git
-cd dashboard-for-android-public
+git clone https://github.com/<votre-pseudo>/dashboard-for-android-5.5.git
+cd dashboard-for-android-5.5
 
 # 2. Configurer (clé et pseudo Last.fm, facultatifs)
 ./setup.sh
@@ -49,9 +49,9 @@ python3 -m http.server 8000
 Sans Git : téléchargez l'archive ZIP de la branche principale.
 
 ```bash
-curl -L -o dashboard.zip https://github.com/<votre-pseudo>/dashboard-for-android-public/archive/refs/heads/main.zip
+curl -L -o dashboard.zip https://github.com/<votre-pseudo>/dashboard-for-android-5.5/archive/refs/heads/main.zip
 unzip dashboard.zip
-cd dashboard-for-android-public-main
+cd dashboard-for-android-5.5-main
 ./setup.sh
 ```
 
@@ -67,7 +67,7 @@ Sans clé, le dashboard fonctionne quand même : il affiche simplement les citat
 
 1. Poussez le projet sur votre compte GitHub, dans un dépôt **public**.
 2. Dans le dépôt : *Settings → Pages → Build and deployment → Deploy from a branch → `main` / `(root)`*.
-3. Après une minute, le dashboard est disponible sur `https://<votre-pseudo>.github.io/dashboard-for-android-public/`.
+3. Après une minute, le dashboard est disponible sur `https://<votre-pseudo>.github.io/dashboard-for-android-5.5/`.
 
 Les clés Last.fm et le pseudo sont écrits dans `script.js`. Si vous publiez votre propre copie, ne la rendez publique qu'après avoir retiré vos clés, ou utilisez un dépôt privé avec un compte GitHub payant (GitHub Pages n'est pas disponible sur un dépôt privé gratuit).
 
@@ -87,7 +87,7 @@ Le dashboard est une page web statique : vous pouvez l'envelopper dans une appli
 npm install -g cordova
 cordova create dashboard-apk com.example.dashboard "Dashboard"
 cd dashboard-apk
-rm -rf www && cp -r /chemin/vers/dashboard-for-android-public www
+rm -rf www && cp -r /chemin/vers/dashboard-for-android-5.5 www
 cordova platform add android
 cordova build android
 ```
